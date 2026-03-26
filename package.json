@@ -1,0 +1,41 @@
+{
+  "name": "foxmayn-frappe-mcp",
+  "version": "0.1.0",
+  "description": "Connect AI agents to Frappe/ERPNext via MCP",
+  "bin": {
+    "foxmayn-frappe-mcp": "./bin/cli.mjs"
+  },
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nasroykh/foxmayn_frappe_mcp"
+  },
+  "homepage": "https://github.com/nasroykh/foxmayn_frappe_mcp#readme",
+  "bugs": {
+    "url": "https://github.com/nasroykh/foxmayn_frappe_mcp/issues"
+  },
+  "keywords": [
+    "frappe",
+    "erpnext",
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "claude",
+    "cursor",
+    "copilot",
+    "llm",
+    "cli",
+    "erp"
+  ],
+  "files": [
+    "bin/",
+    "templates/",
+    "install-mcp.sh",
+    "README.md",
+    "LICENSE"
+  ]
+}

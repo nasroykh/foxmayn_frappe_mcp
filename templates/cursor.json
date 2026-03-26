@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "frappe": {
+      "command": "ffc",
+      "args": ["mcp", "--site", "default"]
+    }
+  }
+}

@@ -1,0 +1,3 @@
+[mcp_servers.frappe]
+command = "ffc"
+args = ["mcp", "--site", "default"]

@@ -1,0 +1,11 @@
+node_modules/
+*.log
+*.tgz
+
+.DS_Store
+
+# Local MCP client configs created during testing
+.mcp.json
+.cursor/mcp.json
+.vscode/mcp.json
+.gemini/settings.json
