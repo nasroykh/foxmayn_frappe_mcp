@@ -149,12 +149,13 @@ function initVscode(ffcBin, site, readOnly) {
 
 function initCodex(ffcBin, site, readOnly) {
   const entry = buildServerEntry(ffcBin, site, readOnly);
-  const argsStr = entry.args.map((a) => `"${a}"`).join(", ");
+  // JSON.stringify output is also a valid TOML basic string.
+  const argsStr = entry.args.map((a) => JSON.stringify(a)).join(", ");
   console.log(`
 Add this to your ~/.codex/config.toml:
 
 [mcp_servers.frappe]
-command = "${entry.command}"
+command = ${JSON.stringify(entry.command)}
 args = [${argsStr}]
 `);
 }

@@ -56,31 +56,42 @@ if ! command -v "$FFC_BIN" >/dev/null 2>&1; then
   exit 1
 fi
 
+for value in "$SITE" "$FFC_BIN"; do
+  case "$value" in
+    *[[:cntrl:]]*)
+      echo "Error: --site and --ffc-path must not contain control characters." >&2
+      exit 1
+      ;;
+  esac
+done
+
 # ─── Build args string ────────────────────────────────────────────────────────
 
-build_args_json() {
-  # Outputs a JSON array string for the ffc mcp command args
-  if [ "$SITE" != "default" ] && [ $READ_ONLY -eq 1 ]; then
-    printf '["mcp","--site","%s","--read-only"]' "$SITE"
-  elif [ "$SITE" != "default" ]; then
-    printf '["mcp","--site","%s"]' "$SITE"
-  elif [ $READ_ONLY -eq 1 ]; then
-    printf '["mcp","--read-only"]'
-  else
-    printf '["mcp"]'
+# quote prints $1 as a double-quoted string, valid in both JSON and TOML:
+# only backslash and double quote need escaping once control characters are
+# rejected above.
+quote() {
+  printf '"%s"' "$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+}
+
+# build_args prints the comma-separated, quoted ffc mcp arguments.
+build_args() {
+  out=$(quote mcp)
+  if [ "$SITE" != "default" ]; then
+    out="$out, $(quote --site), $(quote "$SITE")"
   fi
+  if [ $READ_ONLY -eq 1 ]; then
+    out="$out, $(quote --read-only)"
+  fi
+  printf '%s' "$out"
+}
+
+build_args_json() {
+  printf '[%s]' "$(build_args)"
 }
 
 build_args_toml() {
-  if [ "$SITE" != "default" ] && [ $READ_ONLY -eq 1 ]; then
-    printf '"mcp", "--site", "%s", "--read-only"' "$SITE"
-  elif [ "$SITE" != "default" ]; then
-    printf '"mcp", "--site", "%s"' "$SITE"
-  elif [ $READ_ONLY -eq 1 ]; then
-    printf '"mcp", "--read-only"'
-  else
-    printf '"mcp"'
-  fi
+  build_args
 }
 
 # ─── JSON merge helper (POSIX sh, no jq required) ────────────────────────────
@@ -113,8 +124,8 @@ with open(path, "w") as f:
 PYEOF
   else
     # Fallback: just write a fresh file (won't preserve other servers)
-    printf '{\n  "mcpServers": {\n    "frappe": {\n      "command": "%s",\n      "args": %s\n    }\n  }\n}\n' \
-      "$BIN" "$ARGS" > "$FILE"
+    printf '{\n  "mcpServers": {\n    "frappe": {\n      "command": %s,\n      "args": %s\n    }\n  }\n}\n' \
+      "$(quote "$BIN")" "$ARGS" > "$FILE"
   fi
 }
 
@@ -142,8 +153,8 @@ with open(path, "w") as f:
     f.write("\n")
 PYEOF
   else
-    printf '{\n  "servers": {\n    "frappe": {\n      "command": "%s",\n      "args": %s\n    }\n  }\n}\n' \
-      "$BIN" "$ARGS" > "$FILE"
+    printf '{\n  "servers": {\n    "frappe": {\n      "command": %s,\n      "args": %s\n    }\n  }\n}\n' \
+      "$(quote "$BIN")" "$ARGS" > "$FILE"
   fi
 }
 
@@ -184,8 +195,9 @@ case "$CLIENT" in
     echo "Add the following to ~/.codex/config.toml:"
     echo ""
     echo "[mcp_servers.frappe]"
-    echo "command = \"$FFC_BIN\""
-    echo "args = [$ARGS_TOML]"
+    # printf, not echo: dash's echo would undo the backslash escapes.
+    printf 'command = %s\n' "$(quote "$FFC_BIN")"
+    printf 'args = [%s]\n' "$ARGS_TOML"
     echo ""
     ;;
 
